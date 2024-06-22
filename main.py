@@ -6,35 +6,32 @@ import pybit
 # import TA-lib
 import datetime
 import os
-
-BOT_TOKEN = os.environ["discord-bot-token"]
-DISCORD_CS = os.environ["discord-CS"]
-DISCORD_APP_ID = os.environ["discord-app-id"]
-CHANNEL_ID = int(os.environ["discord-testchannel-id"])
+import asyncio
+from discord_bot_manager import DiscordBotManager
 
 
-intents = discord.Intents.all()
-intents.messages = True
-intents.guilds = True
-bot = commands.Bot(command_prefix='!', intents=intents)
+async def trigger_send_message(bot):
+    while True:
+        await bot.send_time_message()
+        await asyncio.sleep(5)
 
 
-# Test: Send time message every minute
-# @tasks.loop(minutes=1)
-@tasks.loop(hours=1)
-async def send_time_message():
-    now = datetime.datetime.now()
-    current_time = now.strftime("%H:%M:%S")
-    channel = bot.get_channel(CHANNEL_ID)  # Replace with your channel ID
-    await channel.send(f'Current server time is: {current_time}')
+async def main():
+    BOT_TOKEN = os.environ["discord-bot-token"]
+    intents = discord.Intents.all()
+    intents.messages = True
+    intents.guilds = True
+
+    bot = DiscordBotManager(command_prefix='!', intents=intents)
+
+    bot_task = asyncio.create_task(bot.start_bot(BOT_TOKEN))
+    trigger_task = asyncio.create_task(trigger_send_message(bot))
+
+    try:
+        await asyncio.gather(bot_task, trigger_task)
+    except KeyboardInterrupt:
+        await bot.close_bot()
 
 
-# Event: Bot is ready
-@bot.event
-async def on_ready():
-    print(f'{bot.user.name} has connected to Discord!')
-    send_time_message.start()  # Start the task when the bot is ready
-
-
-# Run the bot
-bot.run(BOT_TOKEN)
+if __name__ == "__main__":
+    asyncio.run(main())
