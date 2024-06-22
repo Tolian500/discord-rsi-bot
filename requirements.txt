@@ -1,0 +1,6 @@
+discord.py
+pybit
+TA-Lib
+requests
+pandas
+aiohttp
