@@ -3,9 +3,9 @@ import os
 import datetime
 
 class DiscordBotManager(commands.Bot):
-    def __init__(self, **kwargs):
+    def __init__(self, channel_id: int, **kwargs):
         super().__init__(**kwargs)
-        self.channel_id = int(os.environ["discord-testchannel-id"])
+        self.channel_id = channel_id
 
     async def send_time_message(self, message=""):
         now = datetime.datetime.now()

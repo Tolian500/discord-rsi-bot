@@ -1,0 +1,11 @@
+version: '3'
+services:
+  my-python-app:
+    build:
+      context: .
+    environment:
+      - BOT_TOKEN=${BOT_TOKEN}
+      - API_KEY=${API_KEY}
+      - API_SECRET=${API_SECRET}
+    env_file:
+      - .env

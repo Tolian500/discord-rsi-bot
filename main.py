@@ -1,25 +1,27 @@
-import discord
 import os
+import discord
 import asyncio
 import time
 from discord_bot_manager import DiscordBotManager
 import bybit_manager
 import logging
 
+
+# Secrets
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+API_KEY = os.getenv("API_KEY")
+API_SECRET = os.getenv("API_SECRET")
+DISCORD_CHANNEL_ID = int(os.getenv("DISCORD_CHANNEL_ID"))
+
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-
-
 # Parameters for the Bybit API
-API_KEY = os.environ["bybit-api-key"]
-API_SECRET = os.environ["bybit-api-secret"]
 symbol = "SOLUSDT"
 interval = "60"  # Use "60" for 1-hour interval
 
 # Parameters for the Discord bot
-BOT_TOKEN = os.environ["discord-bot-token"]
 RISING_EMOJI = "\U0001F534"
 LOWERING_EMOJI = "\U0001F7E2"
 
@@ -30,7 +32,7 @@ PRODUCTION_INTERVAL = 3600  # Interval in seconds for production (1 hour)
 async def main():
     # Initialize Discord bot
     intents = discord.Intents.all()
-    bot = DiscordBotManager(command_prefix='!', intents=intents)
+    bot = DiscordBotManager(command_prefix='!', intents=intents, channel_id=DISCORD_CHANNEL_ID)
 
     # Start the Discord bot
     bot_task = asyncio.create_task(bot.start_bot(BOT_TOKEN))
@@ -39,8 +41,6 @@ async def main():
         await asyncio.gather(bot_task, trigger_send_message(bot))  # Pass bot object to trigger_send_message
     except KeyboardInterrupt:
         await bot.close_bot()
-
-
 
 async def trigger_send_message(bot):
     # Initialize BybitManager with API credentials
@@ -62,9 +62,8 @@ async def trigger_send_message(bot):
             first_valid_rsi = df['RSI'].dropna().iloc[0]
             first_valid_time = df.index[df['RSI'].notna()].tolist()[0]
 
-            # TEST VALUES
-            # # first_valid_rsi = 72
-
+            # test
+            first_valid_rsi = 72
             # Initialize send_message flag
             send_message = False
 
@@ -89,8 +88,6 @@ async def trigger_send_message(bot):
             else:
                 logger.info(f"RSI conditions didn't meet. RSI: {first_valid_rsi:.2f}")
                 logger.info("Message not sent")
-
-
 
         await asyncio.sleep(TEST_INTERVAL)
 

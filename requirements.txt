@@ -1,3 +1,7 @@
-pybit~=5.7.0
-pandas~=2.2.2
-ta~=0.11.0
+asyncio==3.4.3  # Asynchronous programming library
+discord.py==2.4.0  # Discord API wrapper
+pandas==2.2.2  # Data manipulation library
+pybit==5.7.0  # Bybit API wrapper
+ta==0.11.0  # Technical analysis library
+cryptography==42.0.8
+pycryptodome==3.20.0
