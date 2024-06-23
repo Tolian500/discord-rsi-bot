@@ -8,12 +8,12 @@ class DiscordBotManager(commands.Bot):
         self.channel_id = channel_id
 
     async def send_time_message(self, message=""):
-        now = datetime.datetime.now()
-        current_time = now.strftime("%H:%M:%S")
+        utc_now = datetime.datetime.utcnow()
+        current_utc_time = utc_now.strftime("%H:%M:%S UTC")
         channel = self.get_channel(self.channel_id)
         if channel:
-            await channel.send(f'{message} - Current time: {current_time}')
-            print(f'Sent message at {current_time}')
+            await channel.send(f'{message} - Current UTC time: {current_utc_time}')
+            print(f'Sent message at {current_utc_time}')
         else:
             print(f'Channel with ID {self.channel_id} not found.')
 

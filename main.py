@@ -2,10 +2,11 @@ import os
 import discord
 import asyncio
 import time
+import logging
 from discord_bot_manager import DiscordBotManager
 import bybit_manager
-import logging
-
+from datetime import datetime, timedelta
+import pytz
 
 # Secrets
 BOT_TOKEN = os.getenv("BOT_TOKEN")
@@ -26,8 +27,8 @@ RISING_EMOJI = "\U0001F534"
 LOWERING_EMOJI = "\U0001F7E2"
 
 # Define global interval variables
-TEST_INTERVAL = 5  # Interval in seconds for testing purposes
-PRODUCTION_INTERVAL = 3600  # Interval in seconds for production (1 hour)
+TEST_INTERVAL = 60  # Interval in seconds for testing purposes, every 1 minute
+WORK_INTERVAL = 60
 
 async def main():
     # Initialize Discord bot
@@ -38,58 +39,68 @@ async def main():
     bot_task = asyncio.create_task(bot.start_bot(BOT_TOKEN))
 
     try:
-        await asyncio.gather(bot_task, trigger_send_message(bot))  # Pass bot object to trigger_send_message
+        await asyncio.gather(bot_task, hourly_task(bot))  # Pass bot object to hourly_task
     except KeyboardInterrupt:
         await bot.close_bot()
+
+async def hourly_task(bot):
+    while True:
+        await trigger_send_message(bot)
+        await asyncio.sleep(WORK_INTERVAL)
 
 async def trigger_send_message(bot):
     # Initialize BybitManager with API credentials
     manager = bybit_manager.BybitManager(API_KEY, API_SECRET)
 
-    while True:
-        # Calculate start_time and end_time for fetching K-line data
-        start_time = int((time.time() - 60 * 60 * 24) * 1000)  # 24 hours ago in milliseconds
-        end_time = int(time.time() * 1000)  # current time in milliseconds
+    # Calculate start_time and end_time for fetching K-line data
+    start_time = int((time.time() - 60 * 60 * 24) * 1000)  # 24 hours ago in milliseconds
+    end_time = int(time.time() * 1000)  # current time in milliseconds
 
-        # Fetch spot K-line data for SOL/USDT
-        kline_data = manager.fetch_kline_data(symbol, interval, start_time, end_time)
+    # Record the current time before fetching data
+    before_fetch = time.time()
 
-        if kline_data:
-            # Calculate RSI
-            df = manager.calculate_rsi(kline_data)
+    # Fetch spot K-line data for SOL/USDT
+    kline_data = manager.fetch_kline_data(symbol, interval, start_time, end_time)
 
-            # Find first non-NaN RSI value and its timestamp
-            first_valid_rsi = df['RSI'].dropna().iloc[0]
-            first_valid_time = df.index[df['RSI'].notna()].tolist()[0]
+    # Record the time after fetching data
+    after_fetch = time.time()
 
-            # test
-            first_valid_rsi = 72
-            # Initialize send_message flag
-            send_message = False
+    # Calculate the delay in milliseconds
+    delay_ms = int((after_fetch - before_fetch) * 1000)
 
-            # Check RSI condition and format message with emojis
-            if first_valid_rsi <= 30 or first_valid_rsi >= 70:
-                send_message = True
-                if first_valid_rsi <= 30:
-                    emoji = RISING_EMOJI  # Red circle emoji for low RSI
-                elif first_valid_rsi >= 70:
-                    emoji = LOWERING_EMOJI  # Green circle emoji for high RSI
-            else:
-                emoji = ""
+    if kline_data:
+        # Calculate RSI
+        df = manager.calculate_rsi(kline_data)
 
-            # Format the message with appropriate emoji
-            rsi_message = f"{emoji} RSI: {first_valid_rsi:.2f} at {first_valid_time.strftime('%Y-%m-%d %H:%M:%S')}"
+        # Find first non-NaN RSI value and its timestamp
+        first_valid_rsi = df['RSI'].dropna().iloc[0]
+        first_valid_time = df.index[df['RSI'].notna()].tolist()[0]
 
-            # Send message to Discord
-            if send_message:
-                await bot.send_time_message(rsi_message)
-                logger.info(f"RSI conditions met. RSI: {first_valid_rsi:.2f}")
-                logger.info(f"Message sent: {rsi_message}")
-            else:
-                logger.info(f"RSI conditions didn't meet. RSI: {first_valid_rsi:.2f}")
-                logger.info("Message not sent")
+        # Initialize send_message flag
+        send_message = False
 
-        await asyncio.sleep(TEST_INTERVAL)
+        # Check RSI condition and format message with emojis
+        if first_valid_rsi <= 30 or first_valid_rsi >= 70:
+            send_message = True
+            if first_valid_rsi <= 30:
+                emoji = RISING_EMOJI  # Red circle emoji for low RSI
+            elif first_valid_rsi >= 70:
+                emoji = LOWERING_EMOJI  # Green circle emoji for high RSI
+        else:
+            emoji = ""
+
+        # Format the message with appropriate emoji and delay
+        rsi_message = f"{emoji} RSI for {symbol}: {first_valid_rsi:.2f} at {first_valid_time.strftime('%Y-%m-%d %H:%M:%S')} " \
+                      f"(Delay: {delay_ms} ms)"
+
+        # Send message to Discord
+        if send_message:
+            await bot.send_time_message(rsi_message)
+            logger.info(f"RSI conditions met. RSI: {first_valid_rsi:.2f}")
+            logger.info(f"Message sent: {rsi_message}")
+        else:
+            logger.info(f"RSI conditions didn't meet. RSI: {first_valid_rsi:.2f}")
+            logger.info("Message not sent")
 
 if __name__ == "__main__":
     asyncio.run(main())
