@@ -4,9 +4,10 @@ This project is an RSI (Relative Strength Index) Discord bot that sends notifica
 
 ## Features
 
-- Connects to the Bybit API to fetch RSI data for a specified symbol and interval.
-- Sends notifications to a Discord channel when RSI conditions are met.
-- Can be configured using environment variables.
+- 📈 Connects to the Bybit API to fetch RSI data for a specified symbol and interval.
+- ✉️ Sends notifications to a Discord channel when RSI conditions are met.
+- ⏱️ Calculates and includes the **delay** between fetching data and RSI calculation in notifications. (2-4 seconds)
+- ⚙️ Can be configured using environment variables.
 
 ## Prerequisites
 
@@ -14,8 +15,8 @@ This project is an RSI (Relative Strength Index) Discord bot that sends notifica
 - Discord bot token
 - Bybit API key and secret
 
-
 ## Functional Requirements
+
 1. **Fetch Spot K-line Data**
    - K-line data for the SOL/USDT pair is fetched from Bybit using the Unified Trading HTTP API.
    - The `fetch_kline_data` method in `BybitManager` class retrieves K-line data based on specified symbol, interval, start time, and end time.
@@ -25,12 +26,13 @@ This project is an RSI (Relative Strength Index) Discord bot that sends notifica
    - The `calculate_rsi` method in `BybitManager` class computes RSI using the `ta.momentum.RSIIndicator` from the `ta` library with a window of 14 periods.
 
 ## How RSI Calculation Works
+
 - **Step-by-step RSI Calculation Process:**
   1. **Data Preparation**: The fetched K-line data is transformed into a Pandas DataFrame.
   2. **Timestamp Handling**: Timestamps are converted to datetime objects for readability and indexing.
   3. **RSI Calculation**: The RSI is computed using the closing prices column (`df['close']`) with a window size of 14 periods.
   4. **Integration**: The RSI values are integrated back into the DataFrame (`df['RSI']`).
-     
+
 ## Setup
 
 1. **Clone the repository**
@@ -93,6 +95,10 @@ This project is an RSI (Relative Strength Index) Discord bot that sends notifica
 
 - Ensure your `.env` file is not included in version control to keep your secrets safe.
 - Replace placeholder values in the `.env` file with your actual credentials and IDs.
+
+## Delay Feature
+
+- The bot now calculates and includes the delay between the real-time UTC and the time when the RSI calculation was performed in milliseconds. This delay is included in the notification messages sent to the Discord channel, providing insight into the timing of data processing.
 
 ## Common Issues
 
