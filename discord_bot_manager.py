@@ -1,4 +1,3 @@
-import discord
 from discord.ext import commands
 import os
 import datetime
@@ -13,7 +12,7 @@ class DiscordBotManager(commands.Bot):
         current_time = now.strftime("%H:%M:%S")
         channel = self.get_channel(self.channel_id)
         if channel:
-            await channel.send(f'Time is: {current_time} - RSI: {message}')
+            await channel.send(f'{message} - Current time: {current_time}')
             print(f'Sent message at {current_time}')
         else:
             print(f'Channel with ID {self.channel_id} not found.')
