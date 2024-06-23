@@ -14,6 +14,23 @@ This project is an RSI (Relative Strength Index) Discord bot that sends notifica
 - Discord bot token
 - Bybit API key and secret
 
+
+## Functional Requirements
+1. **Fetch Spot K-line Data**
+   - K-line data for the SOL/USDT pair is fetched from Bybit using the Unified Trading HTTP API.
+   - The `fetch_kline_data` method in `BybitManager` class retrieves K-line data based on specified symbol, interval, start time, and end time.
+
+2. **Calculate RSI (Relative Strength Index)**
+   - RSI is calculated using the closing prices from the fetched K-line data.
+   - The `calculate_rsi` method in `BybitManager` class computes RSI using the `ta.momentum.RSIIndicator` from the `ta` library with a window of 14 periods.
+
+## How RSI Calculation Works
+- **Step-by-step RSI Calculation Process:**
+  1. **Data Preparation**: The fetched K-line data is transformed into a Pandas DataFrame.
+  2. **Timestamp Handling**: Timestamps are converted to datetime objects for readability and indexing.
+  3. **RSI Calculation**: The RSI is computed using the closing prices column (`df['close']`) with a window size of 14 periods.
+  4. **Integration**: The RSI values are integrated back into the DataFrame (`df['RSI']`).
+     
 ## Setup
 
 1. **Clone the repository**
