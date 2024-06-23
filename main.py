@@ -5,7 +5,7 @@ import time
 import logging
 from discord_bot_manager import DiscordBotManager
 import bybit_manager
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import pytz
 
 # Secrets
@@ -43,8 +43,8 @@ async def minute_task(bot):
     while True:
         await trigger_send_message(bot)
         # Calculate the time until the next full minute in UTC
-        now = datetime.utcnow().replace(tzinfo=pytz.utc)
-        next_minute = (now + timedelta(minutes=1)).replace(second=0, microsecond=0)
+        now = datetime.now(timezone.utc)
+        next_minute = (now + timedelta(minutes=60)).replace(second=0, microsecond=0)
         delta = (next_minute - now).total_seconds()
 
         # Wait until the next full minute
@@ -55,7 +55,7 @@ async def trigger_send_message(bot):
     manager = bybit_manager.BybitManager(API_KEY, API_SECRET)
 
     # Fetch current UTC time
-    utc_now = datetime.utcnow().replace(tzinfo=pytz.utc)
+    utc_now = datetime.now(timezone.utc)
 
     # Convert UTC time to desired format
     current_utc_time = utc_now.strftime("%Y-%m-%d %H:%M:%S UTC")
@@ -98,7 +98,8 @@ async def trigger_send_message(bot):
             emoji = ""
 
         # Format the message with appropriate emoji and delay
-        rsi_message = f"{emoji} RSI for {symbol}: {first_valid_rsi:.2f} at {first_valid_time.strftime('%Y-%m-%d %H:%M:%S')}"
+        rsi_message = f"{emoji} RSI for {symbol}: {first_valid_rsi:.2f} at {first_valid_time.strftime('%Y-%m-%d %H:%M:%S')} " \
+                      f"(UTC Time: {current_utc_time}, Delay: {delay_ms} ms)"
 
         # Send message to Discord
         if send_message:
