@@ -10,10 +10,11 @@ Feel fre to join testing discord chanel with the resaults: https://discord.gg/8x
 - ✉️ Sends notifications to a Discord channel when RSI conditions are met.
 - ⏱️ Calculates and includes the **delay** between fetching data and RSI calculation in notifications. (2-4 seconds)
 - ⚙️ Can be configured using environment variables.
+- 🐞 Test and product mode added: change `TEST_MODE` in `main.py` to True for making script  RSI check every 15 seconds for testing purpose
 
 ## Prerequisites
 
-- Docker
+- 🐳 Docker
 - Discord bot token
 - Bybit API key and secret
 
@@ -101,6 +102,7 @@ Feel fre to join testing discord chanel with the resaults: https://discord.gg/8x
 ## Delay Feature
 
 - The bot now calculates and includes the delay between the real-time UTC and the time when the RSI calculation was performed in milliseconds. This delay is included in the notification messages sent to the Discord channel, providing insight into the timing of data processing.
+- You can now change `TEST_MODE` in `main.py` to True for making script  RSI check every 15 seconds for testing purpose. Could be made as Environmetal variable in the future
 
 ## Common Issues
 
@@ -108,4 +110,4 @@ Feel fre to join testing discord chanel with the resaults: https://discord.gg/8x
 
 ## License
 
-This project is licensed under the MIT License.
+This project is build as test task for Xtrades.net
