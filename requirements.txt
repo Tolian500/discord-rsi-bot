@@ -5,3 +5,4 @@ requests~=2.32.3
 pandas~=2.2.2
 aiohttp
 setuptools~=68.2.0
+ta~=0.11.0
