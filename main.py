@@ -27,7 +27,7 @@ RISING_EMOJI = "\U0001F534"
 LOWERING_EMOJI = "\U0001F7E2"
 
 # Mode selection: True for Test mode (every 15 seconds), False for Product mode (every whole UTC hour)
-TEST_MODE = False
+TEST_MODE = True
 
 async def main():
     # Initialize Discord bot
@@ -127,7 +127,7 @@ async def trigger_send_message(bot):
             emoji = ""
 
         # Format the message with appropriate emoji and delay
-        rsi_message = f"{emoji} RSI for {symbol}: {first_valid_rsi:.2f} at {first_valid_time.strftime('%Y-%m-%d %H:%M:%S')} "
+        rsi_message = f"{emoji} RSI for {symbol}: {first_valid_rsi:.2f} at {first_valid_time.strftime('%Y-%m-%d %H:%M:%S')} Delay: {delay_ms} ms)"
 
         # Send message to Discord
         if send_message:
