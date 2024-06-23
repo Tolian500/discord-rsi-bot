@@ -39,16 +39,28 @@ async def main():
     except KeyboardInterrupt:
         await bot.close_bot()
 
+
+from datetime import datetime, timedelta, timezone
+import asyncio
+
+
 async def minute_task(bot):
     while True:
-        await trigger_send_message(bot)
-        # Calculate the time until the next full minute in UTC
+        # Calculate the current UTC time
         now = datetime.now(timezone.utc)
-        next_minute = (now + timedelta(minutes=60)).replace(second=0, microsecond=0)
-        delta = (next_minute - now).total_seconds()
 
-        # Wait until the next full minute
+        # Calculate the next whole UTC hour
+        next_hour = now.replace(minute=0, second=0, microsecond=0) + timedelta(hours=1)
+
+        # Calculate the delay until the next whole UTC hour
+        delta = (next_hour - now).total_seconds()
+
+        # Wait until the next whole UTC hour
         await asyncio.sleep(delta)
+
+        # Once reached the whole UTC hour, trigger sending message
+        await trigger_send_message(bot)
+
 
 async def trigger_send_message(bot):
     # Initialize BybitManager with API credentials
