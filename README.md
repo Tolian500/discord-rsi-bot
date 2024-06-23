@@ -2,7 +2,7 @@
 
 This project is an RSI (Relative Strength Index) Discord bot that sends notifications to a specified Discord channel when certain RSI conditions are met. The bot is built using Python and runs inside a Docker container.
 
-Feel fre to join testing discord chanel with the resaults: https://discord.gg/8xRdzRV2
+Feel free to join testing discord chanel with the resaults: https://discord.gg/8xRdzRV2
 
 ## Features
 
