@@ -26,10 +26,6 @@ interval = "60"  # Use "60" for 1-hour interval
 RISING_EMOJI = "\U0001F534"
 LOWERING_EMOJI = "\U0001F7E2"
 
-# Define global interval variables
-TEST_INTERVAL = 60  # Interval in seconds for testing purposes, every 1 minute
-WORK_INTERVAL = 60
-
 async def main():
     # Initialize Discord bot
     intents = discord.Intents.all()
@@ -39,18 +35,30 @@ async def main():
     bot_task = asyncio.create_task(bot.start_bot(BOT_TOKEN))
 
     try:
-        await asyncio.gather(bot_task, hourly_task(bot))  # Pass bot object to hourly_task
+        await asyncio.gather(bot_task, minute_task(bot))  # Pass bot object to minute_task
     except KeyboardInterrupt:
         await bot.close_bot()
 
-async def hourly_task(bot):
+async def minute_task(bot):
     while True:
         await trigger_send_message(bot)
-        await asyncio.sleep(WORK_INTERVAL)
+        # Calculate the time until the next full minute in UTC
+        now = datetime.utcnow().replace(tzinfo=pytz.utc)
+        next_minute = (now + timedelta(minutes=1)).replace(second=0, microsecond=0)
+        delta = (next_minute - now).total_seconds()
+
+        # Wait until the next full minute
+        await asyncio.sleep(delta)
 
 async def trigger_send_message(bot):
     # Initialize BybitManager with API credentials
     manager = bybit_manager.BybitManager(API_KEY, API_SECRET)
+
+    # Fetch current UTC time
+    utc_now = datetime.utcnow().replace(tzinfo=pytz.utc)
+
+    # Convert UTC time to desired format
+    current_utc_time = utc_now.strftime("%Y-%m-%d %H:%M:%S UTC")
 
     # Calculate start_time and end_time for fetching K-line data
     start_time = int((time.time() - 60 * 60 * 24) * 1000)  # 24 hours ago in milliseconds
@@ -90,8 +98,7 @@ async def trigger_send_message(bot):
             emoji = ""
 
         # Format the message with appropriate emoji and delay
-        rsi_message = f"{emoji} RSI for {symbol}: {first_valid_rsi:.2f} at {first_valid_time.strftime('%Y-%m-%d %H:%M:%S')} " \
-                      f"(Delay: {delay_ms} ms)"
+        rsi_message = f"{emoji} RSI for {symbol}: {first_valid_rsi:.2f} at {first_valid_time.strftime('%Y-%m-%d %H:%M:%S')}"
 
         # Send message to Discord
         if send_message:
