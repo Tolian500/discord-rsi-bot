@@ -4,9 +4,11 @@ import pybit
 from pybit.unified_trading import HTTP
 import ta
 
+
 class BybitManager:
-    def __init__(self, api_key, api_secret):
+    def __init__(self, api_key, api_secret, window):
         self.session = HTTP(testnet=False, api_key=api_key, api_secret=api_secret)
+        self.window = window
 
     def fetch_kline_data(self, symbol, interval, start_time, end_time):
         try:
@@ -41,7 +43,7 @@ class BybitManager:
         df.set_index('timestamp', inplace=True)
 
         # Calculate RSI
-        df['RSI'] = ta.momentum.RSIIndicator(close=df['close'], window=14).rsi()
+        df['RSI'] = ta.momentum.RSIIndicator(close=df['close'], window=self.window).rsi()
 
         return df
 

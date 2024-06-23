@@ -1,12 +1,11 @@
 import os
 import discord
+from datetime import datetime, timedelta, timezone
 import asyncio
 import time
 import logging
 from discord_bot_manager import DiscordBotManager
-import bybit_manager
-from datetime import datetime, timedelta, timezone
-import pytz
+from bybit_manager import BybitManager
 
 # Secrets
 BOT_TOKEN = os.getenv("BOT_TOKEN")
@@ -21,10 +20,14 @@ logger = logging.getLogger(__name__)
 # Parameters for the Bybit API
 symbol = "SOLUSDT"
 interval = "60"  # Use "60" for 1-hour interval
+window = 14  # Timeframe for RSI
 
 # Parameters for the Discord bot
 RISING_EMOJI = "\U0001F534"
 LOWERING_EMOJI = "\U0001F7E2"
+
+# Mode selection: True for Test mode (every 15 seconds), False for Product mode (every whole UTC hour)
+TEST_MODE = False
 
 async def main():
     # Initialize Discord bot
@@ -35,16 +38,14 @@ async def main():
     bot_task = asyncio.create_task(bot.start_bot(BOT_TOKEN))
 
     try:
-        await asyncio.gather(bot_task, minute_task(bot))  # Pass bot object to minute_task
+        if TEST_MODE:
+            await asyncio.gather(bot_task, test_mode_task(bot))
+        else:
+            await asyncio.gather(bot_task, product_mode_task(bot))
     except KeyboardInterrupt:
         await bot.close_bot()
 
-
-from datetime import datetime, timedelta, timezone
-import asyncio
-
-
-async def minute_task(bot):
+async def product_mode_task(bot):
     while True:
         # Calculate the current UTC time
         now = datetime.now(timezone.utc)
@@ -61,10 +62,26 @@ async def minute_task(bot):
         # Once reached the whole UTC hour, trigger sending message
         await trigger_send_message(bot)
 
+async def test_mode_task(bot):
+    while True:
+        # Calculate the current UTC time
+        now = datetime.now(timezone.utc)
+
+        # Calculate the next whole 15 seconds
+        next_15_seconds = now + timedelta(seconds=(15 - now.second % 15))
+
+        # Calculate the delay until the next whole 15 seconds
+        delta = (next_15_seconds - now).total_seconds()
+
+        # Wait until the next whole 15 seconds
+        await asyncio.sleep(delta)
+
+        # Once reached the whole 15 seconds, trigger sending message
+        await trigger_send_message(bot)
 
 async def trigger_send_message(bot):
     # Initialize BybitManager with API credentials
-    manager = bybit_manager.BybitManager(API_KEY, API_SECRET)
+    manager = BybitManager(API_KEY, API_SECRET, window)
 
     # Fetch current UTC time
     utc_now = datetime.now(timezone.utc)
@@ -79,7 +96,7 @@ async def trigger_send_message(bot):
     # Record the current time before fetching data
     before_fetch = time.time()
 
-    # Fetch spot K-line data for SOL/USDT
+    # Fetch spot K-line data for SOL/USDT using BybitManager
     kline_data = manager.fetch_kline_data(symbol, interval, start_time, end_time)
 
     # Record the time after fetching data
