@@ -127,8 +127,7 @@ async def trigger_send_message(bot):
             emoji = ""
 
         # Format the message with appropriate emoji and delay
-        rsi_message = f"{emoji} RSI for {symbol}: {first_valid_rsi:.2f} at {first_valid_time.strftime('%Y-%m-%d %H:%M:%S')} " \
-                      f"(UTC Time: {current_utc_time}, Delay: {delay_ms} ms)"
+        rsi_message = f"{emoji} RSI for {symbol}: {first_valid_rsi:.2f} at {first_valid_time.strftime('%Y-%m-%d %H:%M:%S')} "
 
         # Send message to Discord
         if send_message:
