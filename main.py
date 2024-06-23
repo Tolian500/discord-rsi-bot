@@ -27,7 +27,7 @@ RISING_EMOJI = "\U0001F534"
 LOWERING_EMOJI = "\U0001F7E2"
 
 # Mode selection: True for Test mode (every 15 seconds), False for Product mode (every whole UTC hour)
-TEST_MODE = True
+TEST_MODE = False
 
 async def main():
     # Initialize Discord bot
