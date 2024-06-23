@@ -34,7 +34,7 @@ class BybitManager:
 
     def calculate_rsi(self, kline_data):
         df = pd.DataFrame(kline_data, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume', 'other'])
-        df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')  # Convert milliseconds to datetime
+        df['timestamp'] = pd.to_datetime(pd.to_numeric(df['timestamp']), unit='ms')
         df[['open', 'high', 'low', 'close', 'volume']] = df[['open', 'high', 'low', 'close', 'volume']].astype(float)
 
         # Set timestamp as index
